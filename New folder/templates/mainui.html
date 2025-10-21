@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Car Navigation Interface</title>
+  <style>
+    .container {
+      position: relative;
+      width: 100%;
+      max-width: 1000px;
+      display: inline-block;
+
+    }
+
+
+    .small-img {
+      position: absolute;
+      top: 0px;
+      left: 0px;
+      width: 10%;
+      transform: translate(0%, 0%) rotate(0deg); 
+      z-index: 2;
+      
+    }
+  
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    }
+
+    body {
+      background-color: #f5f5f5;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    h1 {
+      font-size: 24px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1000px;
+    }
+
+   
+    .layout {
+      border: 2px solid #e53e3e;
+      border-radius: 8px;
+      padding: 16px;
+      width: 100%;
+      display: none;
+    }
+
+    .layout.active {
+      display: block;
+    }
+
+    .layout-content {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    @media (min-width: 768px) {
+      .layout-content {
+        flex-direction: row;
+      }
+    }
+
+    .map-section {
+      border: 2px solid #38a169;
+      border-radius: 8px;
+      padding: 16px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .map-status {
+      color: #38a169;
+      font-weight: 500;
+      margin-bottom: 8px;
+    }
+
+    .map-display {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 0;
+    }
+
+    .map-text {
+      color: #38a169;
+      font-size: 80px;
+      font-weight: bold;
+    }
+
+    .map-subtitle {
+      color: #38a169;
+      font-size: 14px;
+      margin-top: 8px;
+    }
+    .map-image {
+      display: block;
+      max-width: 100%;
+      height: auto;
+    }
+    
+
+    .controls-section {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      width: 100%;
+    }
+
+    @media (min-width: 768px) {
+      .controls-section {
+        width: 180px;
+      }
+    }
+
+    .button {
+      padding: 10px;
+      border-radius: 4px;
+      border: none;
+      font-weight: 500;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .button-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .button-green {
+      background-color: #c6f6d5;
+      color: #276749;
+    }
+
+    .button-green:hover {
+      background-color: #9ae6b4;
+    }
+
+    .button-purple {
+      background-color: #e9d8fd;
+      color: #553c9a;
+    }
+
+    .button-purple:hover {
+      background-color: #d6bcfa;
+    }
+
+    .button-pink {
+      background-color: #fed7e2;
+      color: #97266d;
+    }
+
+    .button-pink:hover {
+      background-color: #fbb6ce;
+    }
+
+    .button-orange {
+      background-color: #feebc8;
+      color: #9c4221;
+    }
+
+    .button-orange:hover {
+      background-color: #fbd38d;
+    }
+
+    .button-blue {
+      background-color: #bee3f8;
+      color: #2c5282;
+    }
+
+    .button-blue:hover {
+      background-color: #90cdf4;
+    }
+
+    /* Destination Dropdown */
+    .destination-select {
+      padding: 10px;
+      border-radius: 4px;
+      border: 1px solid #c6f6d5;
+      background-color: #c6f6d5;
+      color: #276749;
+      font-weight: 500;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    .destination-select:hover {
+      background-color: #9ae6b4;
+    }
+
+    /* Speedometer */
+    .speedometer {
+      display: flex;
+      justify-content: center;
+      margin: 10px 0;
+    }
+
+    .speedometer-gauge {
+      position: relative;
+      width: 120px;
+      height: 120px;
+    }
+
+    .gauge-background {
+      position: absolute;
+      inset: 0;
+      background-color: #e6f7ff;
+      border-radius: 50%;
+      overflow: hidden;
+      clip-path: polygon(50% 50%, 0% 100%, 100% 100%);
+    }
+
+    .gauge-fill {
+      position: absolute;
+      inset: 0;
+      background-color: #4ade80;
+      border-radius: 50%;
+      overflow: hidden;
+      clip-path: polygon(50% 50%, 0% 100%, 0% 100%);
+    }
+
+    .gauge-center {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .gauge-label {
+      background-color: white;
+      border-radius: 50%;
+      width: 80px;
+      height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #22c55e;
+      font-weight: bold;
+    }
+
+    
+    .stop-button {
+      display: flex;
+      justify-content: center;
+      margin-top: 8px;
+    }
+
+    .stop-button-inner {
+      background-color: #e53e3e;
+      color: white;
+      padding: 8px;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    .stop-icon {
+      width: 24px;
+      height: 24px;
+      margin-bottom: 4px;
+    }
+
+    .stop-text {
+      font-size: 14px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>Car Navigation Interface</h1>
+
+  <div class="container">
+    <!-- Idle Layout -->
+    <div id="idle-layout" class="layout active">
+      <div class="layout-content">
+        <!-- Map Section -->
+        <div class="map-section">
+          <div class="map-status">Car is idle/ Not using Navigation</div>
+          <div class="container">
+            <img src="{{ url_for('static', filename='images/car.png') }}"  class="small-img">
+            <img src="{{ url_for('static', filename='images/Generic Map.jpg') }}"  class="map-image">
+          </div>
+        </div>
+
+        <!-- Controls Section -->
+        <div class="controls-section">
+          <button class="button button-green">Current Location</button>
+          
+          <!-- Dropdown for destination selection -->
+          <select id="destination-select" class="destination-select">
+            <option value="" disabled selected>Choose Destination</option>
+            <option value="Ground">Ground</option>
+            <option value="Mech Block">Mech Block</option>
+            <option value="MBA Block">MBA Block</option>
+          </select>
+          
+          <div style="flex: 1;"></div>
+          <div class="speedometer">
+            <div class="speedometer-gauge">
+              <div class="gauge-background"></div>
+              <div class="gauge-fill"></div>
+              <div class="gauge-center">
+                <div class="gauge-label"><h1><span id="speedideal">--</span></h1></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation Layout -->
+    <div id="nav-layout" class="layout">
+      <div class="layout-content">
+        <!-- Map Section -->
+        <div class="map-section">
+          <div class="map-status">Navigation is active, Car is routing</div>
+          <div class="container">
+            <img src="{{ url_for('static', filename='images/car.png') }}"  class="small-img">
+            <img src="{{ url_for('static', filename='images/Generic Map.jpg') }}"  class="map-image">
+          </div>
+        </div>
+
+        <!-- Controls Section -->
+        <div class="controls-section">
+          <div class="button-row">
+            <button class="button button-green" style="flex: 1; font-size: 12px;">Current Location</button>
+            <button id="destination-display" class="button button-purple" style="flex: 1; font-size: 12px;">Destination</button>
+          </div>
+          
+          <button class="button button-pink">Next Action</button>
+          
+          <!-- Dropdown for changing destination -->
+          <select id="change-destination-select" class="destination-select">
+            <option value="" disabled selected>Change Destination</option>
+            <option value="Ground">Ground</option>
+            <option value="Mech Block">Mech Block</option>
+            <option value="MBA Block">MBA Block</option>
+          </select>
+          
+          <button class="button button-orange"><h4><span id="car_state"></span></h4></button>
+          <button class="button button-blue">E.T.A.</button>
+          
+          <div class="speedometer">
+            <div class="speedometer-gauge">
+              <div class="gauge-background"></div>
+              <div class="gauge-fill"></div>
+              <div class="gauge-center">
+                <div class="gauge-label"><h1><span id="speednavigation">--</span></h1></div>
+              </div>
+            </div>
+          </div>
+          
+          <div id="stop-button" class="stop-button">
+            <div class="stop-button-inner">
+              <svg class="stop-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                <line x1="12" y1="9" x2="12" y2="13"></line>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+              </svg>
+              <span class="stop-text">Stop Car</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const idleLayout = document.getElementById('idle-layout');
+    const navLayout = document.getElementById('nav-layout');
+    const destinationSelect = document.getElementById('destination-select');
+    const changeDestinationSelect = document.getElementById('change-destination-select');
+    const destinationDisplay = document.getElementById('destination-display');
+    const stopButton = document.getElementById('stop-button');
+    
+    // Function to switch to navigation mode
+    function switchToNavigationMode() {
+      idleLayout.classList.remove('active');
+      navLayout.classList.add('active');
+    }
+    
+    // Function to switch to idle mode
+    function switchToIdleMode() {
+      navLayout.classList.remove('active');
+      idleLayout.classList.add('active');
+    }
+    
+    
+    destinationSelect.addEventListener('change', function() {
+      if (this.value) {
+        
+        destinationDisplay.textContent = this.value;
+        fetch('/update_destination', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ destination: this.value }),
+        })
+        .then(response => response.json())
+        .then(data => console.log('Response from server:', data))
+        .catch(error => console.error('Error:', error));
+    
+        
+        // Switch to navigation mode
+        switchToNavigationMode();
+      }
+    });
+    
+    
+    //changeDestinationSelect.addEventListener('change', function() {
+    //  if (this.value) {
+    //   destinationDisplay.textContent = this.value;    
+    //    setTimeout(() => {
+    //      this.selectedIndex = 0;
+    //    }, 100);
+    //  }
+   // });
+   changeDestinationSelect.addEventListener('change', function () {
+    if (this.value) {
+      destinationDisplay.textContent = this.value;
+      fetch('/update_destination', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ destination: this.value }),
+      })
+      .then(response => response.json())
+      .then(data => console.log('Response from server:', data))
+      .catch(error => console.error('Error:', error));
+  
+      setTimeout(() => {
+        this.selectedIndex = 0;
+      }, 100);
+    }
+  });
+    
+    // switch back to idle mode
+    stopButton.addEventListener('click', function() {
+      switchToIdleMode();
+      
+      
+      destinationSelect.selectedIndex = 0;
+      changeDestinationSelect.selectedIndex = 0;
+    });
+  </script>
+  
+  <script>
+    function fetchData() {
+        fetch('/data')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('speedideal').textContent = data.speed,
+                document.getElementById('speednavigation').textContent = data.speed,
+                document.getElementById('car_state').textContent = data.car_state,
+                clip=(data.speed)/30*100;
+                const gaugeFill = document.querySelectorAll('.gauge-fill');
+                gaugeFill.forEach(fill => {
+                  fill.style.clipPath = `polygon(50% 50%, 0% 100%, ${clip}% 100%)`;
+                });
+
+                const dir = document.querySelectorAll('.small-img');
+                dir.forEach(fill => {
+                  fill.style.transform = `translate( ${data.dist}%, ${data.angle+100-20}%) rotate(${data.angle}deg)`;
+
+                });
+
+
+            });
+    }
+    setInterval(fetchData,1000);
+    fetchData();
+  </script>
+  
+
+</body>
+</html>

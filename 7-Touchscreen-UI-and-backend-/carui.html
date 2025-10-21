@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Car Navigation Interface</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    }
+
+    body {
+      background-color: #f5f5f5;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    h1 {
+      font-size: 24px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1000px;
+    }
+
+    .layout {
+      border: 2px solid #e53e3e;
+      border-radius: 8px;
+      padding: 16px;
+      width: 100%;
+      display: none;
+    }
+
+    .layout.active {
+      display: block;
+    }
+
+    .layout-content {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    @media (min-width: 768px) {
+      .layout-content {
+        flex-direction: row;
+      }
+    }
+
+    .map-section {
+      border: 2px solid #38a169;
+      border-radius: 8px;
+      padding: 16px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .map-status {
+      color: #38a169;
+      font-weight: 500;
+      margin-bottom: 8px;
+    }
+
+    .map-display {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 300px;
+      position: relative;
+    }
+
+    .map-canvas {
+      width: 100%;
+      height: 100%;
+      border-radius: 8px;
+    }
+
+    .map-subtitle {
+      color: #38a169;
+      font-size: 14px;
+      margin-top: 8px;
+    }
+
+    .controls-section {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      width: 100%;
+    }
+
+    @media (min-width: 768px) {
+      .controls-section {
+        width: 180px;
+      }
+    }
+
+    .button {
+      padding: 10px;
+      border-radius: 4px;
+      border: none;
+      font-weight: 500;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .button-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .button-green {
+      background-color: #c6f6d5;
+      color: #276749;
+    }
+
+    .button-green:hover {
+      background-color: #9ae6b4;
+    }
+
+    .button-purple {
+      background-color: #e9d8fd;
+      color: #553c9a;
+    }
+
+    .button-purple:hover {
+      background-color: #d6bcfa;
+    }
+
+    .button-pink {
+      background-color: #fed7e2;
+      color: #97266d;
+    }
+
+    .button-pink:hover {
+      background-color: #fbb6ce;
+    }
+
+    .button-orange {
+      background-color: #feebc8;
+      color: #9c4221;
+    }
+
+    .button-orange:hover {
+      background-color: #fbd38d;
+    }
+
+    .button-blue {
+      background-color: #bee3f8;
+      color: #2c5282;
+    }
+
+    .button-blue:hover {
+      background-color: #90cdf4;
+    }
+
+    
+    .destination-select {
+      padding: 10px;
+      border-radius: 4px;
+      border: 1px solid #c6f6d5;
+      background-color: #c6f6d5;
+      color: #276749;
+      font-weight: 500;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    .destination-select:hover {
+      background-color: #9ae6b4;
+    }
+
+    
+    .speedometer {
+      display: flex;
+      justify-content: center;
+      margin: 10px 0;
+    }
+
+    .speedometer-gauge {
+      position: relative;
+      width: 120px;
+      height: 120px;
+    }
+
+    .gauge-background {
+      position: absolute;
+      inset: 0;
+      background-color: #e6f7ff;
+      border-radius: 50%;
+      overflow: hidden;
+      clip-path: polygon(50% 50%, 0% 100%, 100% 100%);
+    }
+
+    .gauge-fill {
+      position: absolute;
+      inset: 0;
+      background-color: #4ade80;
+      border-radius: 50%;
+      overflow: hidden;
+      clip-path: polygon(50% 50%, 0% 100%, 0% 100%);
+    }
+
+    .gauge-center {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .gauge-label {
+      background-color: white;
+      border-radius: 50%;
+      width: 80px;
+      height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #22c55e;
+      font-weight: bold;
+    }
+
+    .stop-button {
+      display: flex;
+      justify-content: center;
+      margin-top: 8px;
+    }
+
+    .stop-button-inner {
+      background-color: #e53e3e;
+      color: white;
+      padding: 8px;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    .stop-icon {
+      width: 24px;
+      height: 24px;
+      margin-bottom: 4px;
+    }
+
+    .stop-text {
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    /* Car icon */
+    .car-icon {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      background-color: #e53e3e;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 10;
+      transition: all 1s ease;
+    }
+  </style>
+</head>
+<body>
+  <h1>Car Navigation Interface</h1>
+
+  <div class="container">
+    <!-- Idle Layout -->
+    <div id="idle-layout" class="layout active">
+      <div class="layout-content">
+        <!-- Map Section -->
+        <div class="map-section">
+          <div class="map-status">Car is idle/ Not using Navigation</div>
+          <div class="map-display">
+            <canvas id="idle-map-canvas" class="map-canvas"></canvas>
+          </div>
+        </div>
+
+        <!-- Controls Section -->
+        <div class="controls-section">
+          <button class="button button-green">Current Location</button>
+          
+          <!-- Dropdown for destination selection -->
+          <select id="destination-select" class="destination-select">
+            <option value="" disabled selected>Choose Destination</option>
+            <option value="Ground">Ground</option>
+            <option value="Mech Block">Mech Block</option>
+            <option value="MBA Block">MBA Block</option>
+            <option value="U-turn">U-turn</option>
+          </select>
+          
+          <div style="flex: 1;"></div>
+          <div class="speedometer">
+            <div class="speedometer-gauge">
+              <div class="gauge-background"></div>
+              <div class="gauge-fill"></div>
+              <div class="gauge-center">
+                <div class="gauge-label"><h1><span id="speedideal">--</span></h1></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation Layout -->
+    <div id="nav-layout" class="layout">
+      <div class="layout-content">
+        <!-- Map Section -->
+        <div class="map-section">
+          <div class="map-status">Navigation is active, Car is routing</div>
+          <div class="map-display">
+            <canvas id="nav-map-canvas" class="map-canvas"></canvas>
+            <div id="car-icon" class="car-icon"></div>
+          </div>
+          <div class="map-subtitle">with Route Highlighted</div>
+        </div>
+
+        <!-- Controls Section -->
+        <div class="controls-section">
+          <div class="button-row">
+            <button class="button button-green" style="flex: 1; font-size: 12px;">Current Location</button>
+            <button id="destination-display" class="button button-purple" style="flex: 1; font-size: 12px;">Destination</button>
+          </div>
+          
+          <button class="button button-pink">Next Action</button>
+          
+          <!--changing destination -->
+          <select id="change-destination-select" class="destination-select">
+            <option value="" disabled selected>Change Destination</option>
+            <option value="Ground">Ground</option>
+            <option value="Mech Block">Mech Block</option>
+            <option value="MBA Block">MBA Block</option>
+            <option value="U-turn">U-turn</option>
+          </select>
+          
+          <button class="button button-orange"><h4><span id="car_state"></span></h4></button>
+          <button class="button button-blue">E.T.A.</button>
+          
+          <div class="speedometer">
+            <div class="speedometer-gauge">
+              <div class="gauge-background"></div>
+              <div class="gauge-fill"></div>
+              <div class="gauge-center">
+                <div class="gauge-label"><h1><span id="speednavigation">--</span></h1></div>
+              </div>
+            </div>
+          </div>
+          
+          <div id="stop-button" class="stop-button">
+            <div class="stop-button-inner">
+              <svg class="stop-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                <line x1="12" y1="9" x2="12" y2="13"></line>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+              </svg>
+              <span class="stop-text">Stop Car</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const idleLayout = document.getElementById('idle-layout');
+    const navLayout = document.getElementById('nav-layout');
+    const destinationSelect = document.getElementById('destination-select');
+    const changeDestinationSelect = document.getElementById('change-destination-select');
+    const destinationDisplay = document.getElementById('destination-display');
+    const stopButton = document.getElementById('stop-button');
+    const carIcon = document.getElementById('car-icon');
+    
+    
+    const idleMapCanvas = document.getElementById('idle-map-canvas');
+    const navMapCanvas = document.getElementById('nav-map-canvas');
+    
+    // Current selected destination
+    let currentDestination = '';
+    
+    // Map locations and paths
+    const mapLocations = {
+      'Entrance': { x: 0.5, y: 0.1 },
+      'Current': { x: 0.5, y: 0.2 },
+      'Ground': { x: 0.45, y: 0.5 },
+      'Basketball Court': { x: 0.7, y: 0.3 },
+      'Mech Block': { x: 0.7, y: 0.6 },
+      'MBA Block': { x: 0.7, y: 0.9 },
+      'U-turn Point': { x: 0.5, y: 0.3 }
+    };
+    
+    // Routes from current location to destinations
+    const routes = {
+      'Ground': [
+        { x: 0.5, y: 0.2 }, // Current
+        { x: 0.45, y: 0.5 }  // Ground
+      ],
+      'Mech Block': [
+        { x: 0.5, y: 0.2 }, // Current
+        { x: 0.5, y: 0.6 }, // Intersection
+        { x: 0.7, y: 0.6 }  // Mech Block
+      ],
+      'MBA Block': [
+        { x: 0.5, y: 0.2 }, // Current
+        { x: 0.5, y: 0.9 }, // Intersection
+        { x: 0.7, y: 0.9 }  // MBA Block
+      ],
+      'U-turn': [
+        { x: 0.5, y: 0.2 }, // Current
+        { x: 0.5, y: 0.3 }, // U-turn point
+        { x: 0.5, y: 0.1 }  // Back to entrance
+      ]
+    };
+    
+    // Function to draw trees
+    function drawTrees(ctx, width, height) {
+      // Define tree positions (normalized coordinates)
+      const trees = [
+        { x: 0.1, y: 0.2, size: 0.03 },
+        { x: 0.2, y: 0.3, size: 0.05 },
+        { x: 0.15, y: 0.5, size: 0.04 },
+        { x: 0.25, y: 0.7, size: 0.06 },
+        { x: 0.1, y: 0.8, size: 0.05 },
+        { x: 0.2, y: 0.9, size: 0.04 },
+        { x: 0.3, y: 0.4, size: 0.03 },
+        { x: 0.05, y: 0.6, size: 0.04 },
+        { x: 0.8, y: 0.2, size: 0.03 },
+        { x: 0.9, y: 0.3, size: 0.04 },
+        { x: 0.85, y: 0.7, size: 0.03 },
+        { x: 0.3, y: 0.85, size: 0.05 }
+      ];
+      
+      // Draw each tree
+      trees.forEach(tree => {
+        const x = tree.x * width;
+        const y = tree.y * height;
+        const size = tree.size * Math.min(width, height);
+        
+        ctx.fillStyle = '#2f855a'; 
+        ctx.beginPath();
+        ctx.arc(x, y, size, 0, Math.PI * 2);
+        ctx.fill();
+      });
+    }
+    
+    
+    function drawIdleMap() {
+      const ctx = idleMapCanvas.getContext('2d');
+      
+     
+      idleMapCanvas.width = idleMapCanvas.offsetWidth;
+      idleMapCanvas.height = idleMapCanvas.offsetHeight;
+      
+      const width = idleMapCanvas.width;
+      const height = idleMapCanvas.height;
+      
+      
+      ctx.clearRect(0, 0, width, height);
+      
+      
+      ctx.fillStyle = '#68a063'; 
+      ctx.fillRect(0, 0, width, height);
+      
+      
+      drawTrees(ctx, width, height);
+      
+      
+      ctx.fillStyle = '#f6e05e'; 
+      
+      // Vertical paths
+      ctx.fillRect(width * 0.35, 0, width * 0.05, height); // Left path
+      ctx.fillRect(width * 0.55, 0, width * 0.05, height); // Right path
+      
+      
+      ctx.fillStyle = '#f8fafc'; 
+      roundedRect(ctx, width * 0.3, height * 0.05, width * 0.35, height * 0.08, 10);
+      
+      ctx.fillStyle = '#2d3748';
+      ctx.font = 'bold ' + Math.round(height * 0.05) + 'px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('ENTRANCE', width * 0.475, height * 0.09);
+      
+      
+      ctx.save();
+      ctx.translate(width * 0.45, height * 0.4);
+      ctx.rotate(-Math.PI / 2);
+      ctx.fillStyle = '#f8fafc'; 
+      ctx.font = 'bold ' + Math.round(height * 0.05) + 'px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('GROUND', 0, 0);
+      ctx.restore();
+      
+      
+      // Basketball Court
+      ctx.fillStyle = '#2d3748';
+      ctx.fillRect(width * 0.6, height * 0.17, width * 0.35, height * 0.25);
+      
+      // Basketball court lines
+      ctx.strokeStyle = '#f8fafc';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      
+      // Court outline
+      const courtX = width * 0.7;
+      const courtY = height * 0.3;
+      const courtWidth = width * 0.15;
+      const courtHeight = height * 0.1;
+      
+      ctx.strokeRect(courtX - courtWidth/2, courtY - courtHeight/2, courtWidth, courtHeight);
+      
+      // Center circle
+      ctx.beginPath();
+      ctx.arc(courtX, courtY, courtHeight * 0.3, 0, Math.PI * 2);
+      ctx.stroke();
+      
+      
+      ctx.beginPath();
+      ctx.moveTo(courtX - courtWidth * 0.3, courtY - courtHeight/2);
+      ctx.lineTo(courtX - courtWidth * 0.3, courtY + courtHeight/2);
+      ctx.stroke();
+      
+      // Three-point line
+      ctx.beginPath();
+      ctx.arc(courtX - courtWidth * 0.3, courtY, courtHeight * 0.8, -Math.PI/2, Math.PI/2);
+      ctx.stroke();
+      
+      // Basketball Court text
+      ctx.fillStyle = '#f8fafc'; 
+      ctx.font = 'bold ' + Math.round(height * 0.04) + 'px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('BASKETBALL', width * 0.77, height * 0.23);
+      ctx.fillText('COURT', width * 0.77, height * 0.28);
+      
+      // Mech Block
+      ctx.fillStyle = '#2d3748'; 
+      ctx.fillRect(width * 0.6, height * 0.47, width * 0.35, height * 0.25);
+      
+      // Mech Block text
+      ctx.fillStyle = '#f8fafc';
+      ctx.font = 'bold ' + Math.round(height * 0.04) + 'px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('MECH', width * 0.77, height * 0.55);
+      ctx.fillText('BLOCK', width * 0.77, height * 0.6);
+      
+      // MBA Block
+      ctx.fillStyle = '#2d3748'; 
+      ctx.fillRect(width * 0.6, height * 0.77, width * 0.35, height * 0.2);
+      
+      // MBA Block text
+      ctx.fillStyle = '#f8fafc'; 
+      ctx.font = 'bold ' + Math.round(height * 0.04) + 'px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('MBA', width * 0.77, height * 0.83);
+      ctx.fillText('BLOCK', width * 0.77, height * 0.88);
+      
+      // Draw U-turn indicator
+      const uturnX = width * mapLocations['U-turn Point'].x;
+      const uturnY = height * mapLocations['U-turn Point'].y;
+      
+      // Draw U-turn symbol
+      ctx.strokeStyle = '#f8fafc';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(uturnX, uturnY, 15, Math.PI, 0, false);
+      ctx.lineTo(uturnX + 15, uturnY + 10);
+      ctx.moveTo(uturnX + 15, uturnY);
+      ctx.lineTo(uturnX + 15, uturnY - 10);
+      ctx.stroke();
+      
+      // Draw current location marker
+      const currentX = width * mapLocations['Current'].x;
+      const currentY = height * mapLocations['Current'].y;
+      
+      ctx.fillStyle = '#e53e3e'; 
+      ctx.beginPath();
+      ctx.arc(currentX, currentY, 8, 0, Math.PI * 2);
+      ctx.fill();
+      
+      
+      ctx.strokeStyle = '#e53e3e';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(currentX, currentY, 12, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    
+    // Helper function for rounded rectangles
+    function roundedRect(ctx, x, y, width, height, radius) {
+      ctx.beginPath();
+      ctx.moveTo(x + radius, y);
+      ctx.lineTo(x + width - radius, y);
+      ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+      ctx.lineTo(x + width, y + height - radius);
+      ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+      ctx.lineTo(x + radius, y + height);
+      ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+      ctx.lineTo(x, y + radius);
+      ctx.quadraticCurveTo(x, y, x + radius, y);
+      ctx.closePath();
+      ctx.fill();
+    }
+    
+    // Function to draw the navigation map
+    function drawNavMap(destination) {
+      const ctx = navMapCanvas.getContext('2d');
+      
+      
+      navMapCanvas.width = navMapCanvas.offsetWidth;
+      navMapCanvas.height = navMapCanvas.offsetHeight;
+      
+      const width = navMapCanvas.width;
+      const height = navMapCanvas.height;
+      
+      
+      ctx.clearRect(0, 0, width, height);
+      
+      // Draw the same base map as idle mode
+      
+      ctx.fillStyle = '#68a063'; 
+      ctx.fillRect(0, 0, width, height);
+      
+      
+      drawTrees(ctx, width, height);
+      
+      
+      ctx.fillStyle = '#f6e05e'; 
+      
+      
+      ctx.fillRect(width * 0.35, 0, width * 0.05, height); // Left path
+      ctx.fillRect(width * 0.55, 0, width * 0.05, height); // Right path
+      
+      // Draw entrance
+      ctx.fillStyle = '#f8fafc'; 
+      roundedRect(ctx, width * 0.3, height * 0.05, width * 0.35, height * 0.08, 10);
+      
+      ctx.fillStyle = '#2d3748'; 
+      ctx.font = 'bold ' + Math.round(height * 0.05) + 'px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('ENTRANCE', width * 0.475, height * 0.09);
+      
+      
+      ctx.save();
+      ctx.translate(width * 0.45, height * 0.4);
+      ctx.rotate(-Math.PI / 2);
+      ctx.fillStyle = '#f8fafc'; 
+      ctx.font = 'bold ' + Math.round(height * 0.05) + 'px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('GROUND', 0, 0);
+      ctx.restore();
+      
+      
+      // Basketball Court
+      ctx.fillStyle = '#2d3748'; 
+      ctx.fillRect(width * 0.6, height * 0.17, width * 0.35, height * 0.25);
+      
+      //  lines
+      ctx.strokeStyle = '#f8fafc';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      
+      // Court outline
+      const courtX = width * 0.7;
+      const courtY = height * 0.3;
+      const courtWidth = width * 0.15;
+      const courtHeight = height * 0.1;
+      
+      ctx.strokeRect(courtX - courtWidth/2, courtY - courtHeight/2, courtWidth, courtHeight);
+      
+      // Center circle
+      ctx.beginPath();
+      ctx.arc(courtX, courtY, courtHeight * 0.3, 0, Math.PI * 2);
+      ctx.stroke();
+      
+      // Free throw line
+      ctx.beginPath();
+      ctx.moveTo(courtX - courtWidth * 0.3, courtY - courtHeight/2);
+      ctx.lineTo(courtX - courtWidth * 0.3, courtY + courtHeight/2);
+      ctx.stroke();
+      
+      // Three-point line
+      ctx.beginPath();
+      ctx.arc(courtX - courtWidth * 0.3, courtY, courtHeight * 0.8, -Math.PI/2, Math.PI/2);
+      ctx.stroke();
+      
+      // Basketball Court text
+      ctx.fillStyle = '#f8fafc'; 
+      ctx.font = 'bold ' + Math.round(height * 0.04) + 'px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('BASKETBALL', width * 0.77, height * 0.23);
+      ctx.fillText('COURT', width * 0.77, height * 0.28);
+      
+      // Mech Block
+      ctx.fillStyle = '#2d3748'; 
+      ctx.fillRect(width * 0.6, height * 0.47, width * 0.35, height * 0.25);
+      
+      // Mech Block text
+      ctx.fillStyle = '#f8fafc';
+      ctx.font = 'bold ' + Math.round(height * 0.04) + 'px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('MECH', width * 0.77, height * 0.55);
+      ctx.fillText('BLOCK', width * 0.77, height * 0.6);
+      
+      // MBA Block
+      ctx.fillStyle = '#2d3748'; 
+      ctx.fillRect(width * 0.6, height * 0.77, width * 0.35, height * 0.2);
+      
+      // MBA Block text
+      ctx.fillStyle = '#f8fafc'; 
+      ctx.font = 'bold ' + Math.round(height * 0.04) + 'px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('MBA', width * 0.77, height * 0.83);
+      ctx.fillText('BLOCK', width * 0.77, height * 0.88);
+      
+      // Draw U-turn indicator
+      const uturnX = width * mapLocations['U-turn Point'].x;
+      const uturnY = height * mapLocations['U-turn Point'].y;
+      
+      // Draw U-turn symbol
+      ctx.strokeStyle = '#f8fafc';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(uturnX, uturnY, 15, Math.PI, 0, false);
+      ctx.lineTo(uturnX + 15, uturnY + 10);
+      ctx.moveTo(uturnX + 15, uturnY);
+      ctx.lineTo(uturnX + 15, uturnY - 10);
+      ctx.stroke();
+      
+      // Draw route based on destination
+      if (routes[destination]) {
+        ctx.strokeStyle = '#e53e3e'; // Red for route
+        ctx.lineWidth = 5;
+        ctx.beginPath();
+        
+        const route = routes[destination];
+        ctx.moveTo(width * route[0].x, height * route[0].y);
+        
+        for (let i = 1; i < route.length; i++) {
+          ctx.lineTo(width * route[i].x, height * route[i].y);
+        }
+        
+        ctx.stroke();
+        
+        // Highlight destination
+        let destX, destY;
+        
+        if (destination === 'Ground') {
+          destX = width * 0.45;
+          destY = height * 0.5;
+          
+          // Highlight Ground text
+          ctx.save();
+          ctx.translate(width * 0.45, height * 0.4);
+          ctx.rotate(-Math.PI / 2);
+          ctx.fillStyle = '#fbd38d'; // Highlight color
+          ctx.font = 'bold ' + Math.round(height * 0.05) + 'px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText('GROUND', 0, 0);
+          ctx.restore();
+        } else if (destination === 'Mech Block') {
+          destX = width * 0.77;
+          destY = height * 0.6;
+          
+          // Highlight Mech Block
+          ctx.strokeStyle = '#fbd38d'; 
+          ctx.lineWidth = 3;
+          ctx.strokeRect(width * 0.6, height * 0.47, width * 0.35, height * 0.25);
+        } else if (destination === 'MBA Block') {
+          destX = width * 0.77;
+          destY = height * 0.85;
+          
+          
+          ctx.strokeStyle = '#fbd38d'; 
+          ctx.lineWidth = 3;
+          ctx.strokeRect(width * 0.6, height * 0.77, width * 0.35, height * 0.2);
+        } else if (destination === 'U-turn') {
+          destX = width * 0.5;
+          destY = height * 0.1;
+          
+         
+          ctx.strokeStyle = '#fbd38d'; 
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.arc(width * mapLocations['U-turn Point'].x, height * mapLocations['U-turn Point'].y, 18, Math.PI, 0, false);
+          ctx.stroke();
+          
+          
+          ctx.strokeStyle = '#fbd38d'; 
+          ctx.strokeRect(width * 0.3, height * 0.05, width * 0.35, height * 0.08);
+        }
+        
+        
+        ctx.fillStyle = '#805ad5'; 
+        ctx.beginPath();
+        ctx.arc(destX, destY, 8, 0, Math.PI * 2);
+        ctx.fill();
+        
+       
+        ctx.strokeStyle = '#805ad5';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(destX, destY, 12, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      
+     
+      const currentX = width * mapLocations['Current'].x;
+      const currentY = height * mapLocations['Current'].y;
+      
+      ctx.fillStyle = '#e53e3e'; 
+      ctx.beginPath();
+      ctx.arc(currentX, currentY, 8, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    
+    
+    function updateCarPosition(destination, progress) {
+      if (!routes[destination] || !carIcon) return;
+      
+      const route = routes[destination];
+      const width = navMapCanvas.width;
+      const height = navMapCanvas.height;
+      
+      
+      let segmentIndex = 0;
+      let segmentProgress = 0;
+      
+      if (route.length > 2) {
+        if (progress < 0.5) {
+          segmentIndex = 0;
+          segmentProgress = progress / 0.5;
+        } else {
+          segmentIndex = 1;
+          segmentProgress = (progress - 0.5) / 0.5;
+        }
+      } else {
+        segmentProgress = progress;
+      }
+      
+      const startX = route[segmentIndex].x;
+      const startY = route[segmentIndex].y;
+      const endX = route[segmentIndex + 1].x;
+      const endY = route[segmentIndex + 1].y;
+      
+      const posX = startX + (endX - startX) * segmentProgress;
+      const posY = startY + (endY - startY) * segmentProgress;
+      
+     
+      carIcon.style.left = (width * posX) + 'px';
+      carIcon.style.top = (height * posY) + 'px';
+    }
+    
+    
+    function switchToNavigationMode() {
+      idleLayout.classList.remove('active');
+      navLayout.classList.add('active');
+      
+      
+      if (currentDestination) {
+        drawNavMap(currentDestination);
+      }
+    }
+    
+    // Function to switch to idle mode
+    function switchToIdleMode() {
+      navLayout.classList.remove('active');
+      idleLayout.classList.add('active');
+    }
+    
+    
+    destinationSelect.addEventListener('change', function() {
+      if (this.value) {
+        
+        currentDestination = this.value;
+        
+        
+        destinationDisplay.textContent = this.value;
+        
+        
+        switchToNavigationMode();
+      }
+    });
+    
+   
+    changeDestinationSelect.addEventListener('change', function() {
+      if (this.value) {
+        
+        currentDestination = this.value;
+        
+        
+        destinationDisplay.textContent = this.value;
+        
+        
+        drawNavMap(currentDestination);
+        
+        
+        fetch('/update_destination', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ destination: this.value }),
+        })
+        .then(response => response.json())
+        .then(data => console.log('Response from server:', data))
+        .catch(error => console.error('Error:', error));
+        
+        
+        setTimeout(() => {
+          this.selectedIndex = 0;
+        }, 100);
+      }
+    });
+    
+    
+    stopButton.addEventListener('click', function() {
+      switchToIdleMode();
+      
+      
+      destinationSelect.selectedIndex = 0;
+      changeDestinationSelect.selectedIndex = 0;
+    });
+    
+   
+    window.addEventListener('load', function() {
+      
+      idleMapCanvas.width = idleMapCanvas.offsetWidth;
+      idleMapCanvas.height = idleMapCanvas.offsetHeight;
+      navMapCanvas.width = navMapCanvas.offsetWidth;
+      navMapCanvas.height = navMapCanvas.offsetHeight;
+      
+      // Draw idle map
+      drawIdleMap();
+    });
+    
+    // Handle window resize
+    window.addEventListener('resize', function() {
+      
+      drawIdleMap();
+      if (currentDestination) {
+        drawNavMap(currentDestination);
+      }
+    });
+  </script>
+  
+  <script>
+    function fetchData() {
+        fetch('/data')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('speedideal').textContent = data.speed;
+                document.getElementById('speednavigation').textContent = data.speed;
+                document.getElementById('car_state').textContent = data.car_state;
+                clip=(data.speed)/30*100;
+                const gaugeFill = document.querySelectorAll('.gauge-fill');
+                gaugeFill.forEach(fill => {
+                  fill.style.clipPath = `polygon(50% 50%, 0% 100%, ${clip}% 100%)`;
+                });
+                
+                
+                if (navLayout.classList.contains('active') && currentDestination) {
+                    
+                    const progress = Math.min(data.speed / 30, 0.95);
+                    updateCarPosition(currentDestination, progress);
+                    
+                    
+                    drawNavMap(currentDestination);
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching data:', error);
+                
+                document.getElementById('speedideal').textContent = '15';
+                document.getElementById('speednavigation').textContent = '15';
+                document.getElementById('car_state').textContent = 'Moving';
+                const clip = 15/30*100;
+                const gaugeFill = document.querySelectorAll('.gauge-fill');
+                gaugeFill.forEach(fill => {
+                  fill.style.clipPath = `polygon(50% 50%, 0% 100%, ${clip}% 100%)`;
+                });
+                
+                
+                if (navLayout.classList.contains('active') && currentDestination) {
+                    
+                    const progress = 0.5; 
+                    updateCarPosition(currentDestination, progress);
+                    
+                    
+                    drawNavMap(currentDestination);
+                }
+            });
+    }
+    
+    // Initial map drawing
+    drawIdleMap();
+    
+    // Set up data fetching
+    setInterval(fetchData, 1000);
+    fetchData();
+  </script>
+</body>
+</html
